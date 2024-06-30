@@ -2,10 +2,13 @@ from flask import request, jsonify
 from runpod_sd_proxy import app, use_model, cur, logger
 import requests
 import os
+import json
 
 RUNPOD_API_KEY = os.environ.get("RUNPOD_API_KEY")
 RUNPOD_BASE_URL = os.environ.get("RUNPOD_BASE_URL")
 RUNPOD_BASE_URL_SDXL = os.environ.get("RUNPOD_BASE_URL_SDXL")
+SD_OVERRIDES = json.loads(os.environ.get("SD_OVERRIDES"))
+SDXL_OVERRIDES = json.loads(os.environ.get("SDXL_OVERRIDES"))
 MODELS = []
 TIMEOUT = int(os.environ.get("TIMEOUT", 120))
 if RUNPOD_BASE_URL is not None:
@@ -68,9 +71,10 @@ def generate_image():
 
     if model == "v1-5-sdxl" and RUNPOD_BASE_URL_SDXL is not None:
         logger.debug("using sdxl")
+        sd_request["input"].update(SDXL_OVERRIDES)
         sd_request["input"]["num_inference_steps"] = sd_request["input"].pop("steps")
         sd_request["input"]["num_images"] = sd_request["input"].pop("batch_size")
-        logger.debug("sending: ", sd_request)
+        logger.debug(f"sending: {sd_request}")
         sd_response = requests.post(
             RUNPOD_BASE_URL_SDXL,
             headers=headers,
@@ -81,8 +85,9 @@ def generate_image():
         image = sd_response_json.get("output", {}).get("image_url", "")
         image = image.replace("data:image/png;base64,", "")
     elif model == "v1-5-pruned-emaonly":
+        sd_request["input"].update(SD_OVERRIDES)
         logger.debug("using pruned")
-        logger.debug("sending: ", sd_request)
+        logger.debug(f"sending: {sd_request}")
         sd_response = requests.post(
             RUNPOD_BASE_URL,
             headers=headers,
