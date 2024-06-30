@@ -12,7 +12,7 @@ jobs:
         with:
           registry: ghcr.io
           username: tcarwash
-          password: ${{ secrets.REGISTRY_TOKEN }}
+          password: ${{ secrets.REPOSITORY_TOKEN }}
       - name: Set vars for tag
         id: vars
         shell: bash
