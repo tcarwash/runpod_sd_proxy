@@ -7,6 +7,7 @@ RUNPOD_API_KEY = os.environ.get("RUNPOD_API_KEY")
 RUNPOD_BASE_URL = os.environ.get("RUNPOD_BASE_URL")
 RUNPOD_BASE_URL_SDXL = os.environ.get("RUNPOD_BASE_URL_SDXL")
 MODELS = []
+TIMEOUT = os.environ.get("TIMEOUT", 120)
 if RUNPOD_BASE_URL is not None:
     MODELS = [
         {
@@ -73,7 +74,7 @@ def generate_image():
             RUNPOD_BASE_URL_SDXL,
             headers=headers,
             json=sd_request,
-            timeout=60,
+            timeout=TIMEOUT,
         )
         sd_response_json = sd_response.json()
         image = sd_response_json.get("output", {}).get("image_url", "")

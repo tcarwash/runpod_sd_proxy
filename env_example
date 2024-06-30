@@ -1,3 +1,4 @@
 RUNPOD_API_KEY=APIKEYHERE
 RUNPOD_BASE_URL=https://api.runpod.ai/v2/YOUR_INSTANCE/runsync
 RUNPOD_BASE_URL_SDXL=https://api.runpod.ai/v2/YOUR_SDXL_INSTANCE/runsync
+TIMEOUT=120
