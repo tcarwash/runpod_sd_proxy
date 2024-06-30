@@ -7,7 +7,7 @@ RUNPOD_API_KEY = os.environ.get("RUNPOD_API_KEY")
 RUNPOD_BASE_URL = os.environ.get("RUNPOD_BASE_URL")
 RUNPOD_BASE_URL_SDXL = os.environ.get("RUNPOD_BASE_URL_SDXL")
 MODELS = []
-TIMEOUT = os.environ.get("TIMEOUT", 120)
+TIMEOUT = int(os.environ.get("TIMEOUT", 120))
 if RUNPOD_BASE_URL is not None:
     MODELS = [
         {
