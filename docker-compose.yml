@@ -8,3 +8,5 @@ services:
       - "0.0.0.0:9080:9080"
     env_file:
       - .env
+    volumes:
+      - ./runpod_proxy_data:/data
