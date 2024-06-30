@@ -12,7 +12,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.REPOSITORY_TOKEN }}
       - name: Set vars for tag
         id: vars
         shell: bash
