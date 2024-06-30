@@ -7,8 +7,8 @@ import json
 RUNPOD_API_KEY = os.environ.get("RUNPOD_API_KEY")
 RUNPOD_BASE_URL = os.environ.get("RUNPOD_BASE_URL")
 RUNPOD_BASE_URL_SDXL = os.environ.get("RUNPOD_BASE_URL_SDXL")
-SD_OVERRIDES = json.loads(os.environ.get("SD_OVERRIDES"))
-SDXL_OVERRIDES = json.loads(os.environ.get("SDXL_OVERRIDES"))
+SD_OVERRIDES = json.loads(os.environ.get("SD_OVERRIDES", "{}"))
+SDXL_OVERRIDES = json.loads(os.environ.get("SDXL_OVERRIDES", "{}"))
 MODELS = []
 TIMEOUT = int(os.environ.get("TIMEOUT", 120))
 if RUNPOD_BASE_URL is not None:
