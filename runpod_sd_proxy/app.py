@@ -23,17 +23,17 @@ if RUNPOD_BASE_URL_SDXL is not None:
         }
     )
 
-USE_MODEL = "v1-5-pruned-emaonly"
+if not MODELS:
+    raise ValueError(
+        "No models available, you must specify RUNPOD_API_KEY and at least one of RUNPOD_BASE_URL or RUNPOD_BASE_URL_SDXL"
+    )
 
 
 @app.route("/sdapi/v1/sd-models")
 def models():
     """returns models"""
-    if MODELS:
-        logger.debug(MODELS)
-        return jsonify(MODELS)
-    else:
-        return jsonify({"error": "No models available"})
+    logger.debug(MODELS)
+    return jsonify(MODELS)
 
 
 @app.route("/sdapi/v1/options")
@@ -59,17 +59,17 @@ def options_post():
 @app.route("/sdapi/v1/txt2img", methods=["POST"])
 def generate_image():
     """returns image"""
-    prompt = request.json.get("prompt")
-    sd_request = {"input": {"prompt": prompt}}
-
+    request_body = request.json
+    sd_request = {"input": request_body}
     headers = {"Authorization": f"Bearer {RUNPOD_API_KEY}"}
-    logger.debug(request.json)
     model = cur.execute(
         f"SELECT use_model FROM model WHERE id = {use_model};"
     ).fetchone()[0]
 
     if model == "v1-5-sdxl" and RUNPOD_BASE_URL_SDXL is not None:
         logger.debug("using sdxl")
+        del sd_request["input"]["batch_size"]
+        del sd_request["input"]["steps"]
         sd_response = requests.post(
             RUNPOD_BASE_URL_SDXL,
             headers=headers,
@@ -78,7 +78,6 @@ def generate_image():
         )
         sd_response_json = sd_response.json()
         image = sd_response_json.get("output", {}).get("image_url", "")
-        logger.debug(image)
         image = image.replace("data:image/png;base64,", "")
     elif model == "v1-5-pruned-emaonly":
         logger.debug("using pruned")
@@ -86,10 +85,11 @@ def generate_image():
             RUNPOD_BASE_URL,
             headers=headers,
             json=sd_request,
+            timeout=TIMEOUT,
         )
         sd_response_json = sd_response.json()
         image = sd_response_json.get("output", {}).get("images", [])[0]
-    response = {"images": [image], "parameters": {}, "info": prompt}
+    response = {"images": [image], "parameters": {}, "info": request_body.get("prompt")}
     return jsonify(response)
 
 
