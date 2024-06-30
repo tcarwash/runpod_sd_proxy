@@ -68,8 +68,9 @@ def generate_image():
 
     if model == "v1-5-sdxl" and RUNPOD_BASE_URL_SDXL is not None:
         logger.debug("using sdxl")
-        del sd_request["input"]["batch_size"]
-        del sd_request["input"]["steps"]
+        sd_request["input"]["num_inference_steps"] = sd_request["input"].pop("steps")
+        sd_request["input"]["num_images"] = sd_request["input"].pop("batch_size")
+        logger.debug("sending: ", sd_request)
         sd_response = requests.post(
             RUNPOD_BASE_URL_SDXL,
             headers=headers,
@@ -81,6 +82,7 @@ def generate_image():
         image = image.replace("data:image/png;base64,", "")
     elif model == "v1-5-pruned-emaonly":
         logger.debug("using pruned")
+        logger.debug("sending: ", sd_request)
         sd_response = requests.post(
             RUNPOD_BASE_URL,
             headers=headers,
