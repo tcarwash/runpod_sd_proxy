@@ -4,3 +4,4 @@ venv/*
 docker-compose-dev.yml
 data/*
 runpod_proxy_data/*
+runpod_sd_proxy.db

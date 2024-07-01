@@ -10,7 +10,9 @@ if os.environ.get("DEBUG"):
 handler = logging.StreamHandler(sys.stdout)
 logger.addHandler(handler)
 app = Flask(__name__)
-db = sqlite3.connect("/data/runpod_sd_proxy.db", check_same_thread=False)
+db_path = os.environ.get("DB_PATH", "/data/runpod_sd_proxy.db")
+print(db_path)
+db = sqlite3.connect(db_path, check_same_thread=False)
 cur = db.cursor()
 cur.execute("DROP TABLE IF EXISTS model;")
 cur.execute(
