@@ -3,6 +3,9 @@ from runpod_sd_proxy import app, use_model, cur, logger, db
 import requests
 import os
 import json
+import sys
+
+sys.path.append("./runpod_sd_proxy")
 
 RUNPOD_API_KEY = os.environ.get("RUNPOD_API_KEY")
 RUNPOD_BASE_URL = os.environ.get("RUNPOD_BASE_URL")
