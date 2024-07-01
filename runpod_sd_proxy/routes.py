@@ -74,7 +74,10 @@ def pruned_sd_request(sd_request, headers):
         timeout=TIMEOUT,
     )
     sd_response_json = sd_response.json()
-    image = sd_response_json.get("output", {}).get("images", [])[0]
+    try:
+        image = sd_response_json.get("output", {}).get("images", [])[0]
+    except IndexError:
+        return {"error": "Invalid response from runpod"}
 
     return image
 
@@ -92,8 +95,11 @@ def sdxl_sd_request(sd_request, headers):
         timeout=TIMEOUT,
     )
     sd_response_json = sd_response.json()
-    image = sd_response_json.get("output", {}).get("image_url", "")
-    image = image.replace("data:image/png;base64,", "")
+    try:
+        image = sd_response_json.get("output").get("image_url")
+        image = image.replace("data:image/png;base64,", "")
+    except AttributeError:
+        return {"error": "Invalid response from runpod"}
 
     return image
 
@@ -107,10 +113,6 @@ model_method_map = {
 def generate_image_based_on_model(method, request_body: dict):
     sd_request = {"input": request_body}
     headers = {"Authorization": f"Bearer {RUNPOD_API_KEY}"}
-    model = cur.execute(
-        f"SELECT use_model FROM model WHERE id = {use_model};"
-    ).fetchone()[0]
-
     image = method(sd_request, headers)
 
     return image
