@@ -1,2 +1,2 @@
 [tool.pytest.ini_options]
-pythonpath = ".."
+pythonpath = "runpod_sd_proxy"
