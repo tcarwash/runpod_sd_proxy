@@ -22,6 +22,7 @@ cur.execute(
     """
 )
 test = cur.execute("INSERT INTO model (use_model) VALUES ('v1-5-pruned-emaonly');")
+db.commit()
 use_model = cur.lastrowid
 
 from .app import app
