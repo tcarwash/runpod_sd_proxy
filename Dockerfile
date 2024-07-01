@@ -1,5 +1,7 @@
 FROM python:3.11-alpine
 
+RUN apt update && apt upgrade
+
 COPY runpod_sd_proxy /runpod_sd_proxy
 
 RUN mkdir /data
