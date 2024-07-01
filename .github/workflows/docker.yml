@@ -47,7 +47,7 @@ jobs:
           RUNPOD_API_KEY: "test"
           RUNPOD_BASE_URL: "https://runpod.com/api/v1"
           RUNPOD_BASE_URL_SDXL: "https://runpod.com/api/v1"
-          PYTHONPATH: runpod_sd_proxy
+          PYTHONPATH: "."
         run: |
           python -m pip freeze
           python -m pytest ./tests
