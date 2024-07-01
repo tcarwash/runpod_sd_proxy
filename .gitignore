@@ -6,3 +6,4 @@ data/*
 runpod_proxy_data/*
 runpod_sd_proxy.db
 *__pycache__/*
+.pyttest_cache/*

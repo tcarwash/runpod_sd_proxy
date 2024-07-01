@@ -49,7 +49,7 @@ jobs:
           RUNPOD_BASE_URL_SDXL: "https://runpod.com/api/v1"
         run: |
           ls -la
-          python -m pytest
+          python -m pytest tests
   build:
     runs-on: ubuntu-latest
     steps:
