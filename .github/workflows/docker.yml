@@ -48,7 +48,7 @@ jobs:
           RUNPOD_BASE_URL: "https://runpod.com/api/v1"
           RUNPOD_BASE_URL_SDXL: "https://runpod.com/api/v1"
         run: |
-          pytest tests
+          pytest
   build:
     runs-on: ubuntu-latest
     steps:
