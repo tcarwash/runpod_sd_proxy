@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from runpod_sd_proxy.app import (
+from app import (
     pruned_sd_request,
     sdxl_sd_request,
     generate_image_based_on_model,
