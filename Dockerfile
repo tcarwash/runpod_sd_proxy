@@ -1,6 +1,6 @@
 FROM python:3.11-alpine
 
-RUN apt update && apt upgrade
+RUN apk update && apk upgrade
 
 COPY runpod_sd_proxy /runpod_sd_proxy
 
