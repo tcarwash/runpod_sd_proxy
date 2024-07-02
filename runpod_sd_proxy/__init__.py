@@ -27,4 +27,4 @@ test = cur.execute("INSERT INTO model (use_model) VALUES ('v1-5-pruned-emaonly')
 db.commit()
 use_model = cur.lastrowid
 
-from runpod_sd_proxy import routes
+from runpod_sd_proxy import routes, models
