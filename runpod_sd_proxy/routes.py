@@ -1,8 +1,17 @@
 from flask import request, jsonify
 from runpod_sd_proxy import app, use_model, cur, logger, db
+from runpod_sd_proxy.models import (
+    SDOutput,
+    SDXLOutput,
+    SDRequest,
+    SDXLRequest,
+    SDRequestInput,
+    SDXLRequestInput,
+)
 import requests
 import os
 import json
+from pydantic import ValidationError
 
 RUNPOD_API_KEY = os.environ.get("RUNPOD_API_KEY")
 RUNPOD_BASE_URL = os.environ.get("RUNPOD_BASE_URL")
@@ -63,43 +72,44 @@ def options_post():
     return jsonify({"sd_model_checkpoint": model})
 
 
-def pruned_sd_request(sd_request, headers):
-    sd_request["input"].update(SD_OVERRIDES)
+def pruned_sd_request(sd_request: SDRequest, headers):
+    sd_request.input.__dict__.update(SD_OVERRIDES)
     logger.debug("using pruned")
-    logger.debug(f"sending: {sd_request}")
-    sd_response = requests.post(
+    logger.debug(f"sending: {sd_request.model_dump()}")
+    response = requests.post(
         RUNPOD_BASE_URL,
         headers=headers,
-        json=sd_request,
+        json=sd_request.model_dump(),
         timeout=TIMEOUT,
     )
-    sd_response_json = sd_response.json()
-    try:
-        image = sd_response_json.get("output", {}).get("images", [])[0]
-    except IndexError:
-        return {"error": "Invalid response from runpod"}
+    response = SDOutput.model_validate(response.json())
+    image = response.output.images[0]
 
     return image
 
 
-def sdxl_sd_request(sd_request, headers):
+def sdxl_sd_request(sd_request: SDRequest, headers):
     logger.debug("using sdxl")
-    sd_request["input"].update(SDXL_OVERRIDES)
-    sd_request["input"]["num_inference_steps"] = sd_request["input"].pop("steps")
-    sd_request["input"]["num_images"] = sd_request["input"].pop("batch_size")
-    logger.debug(f"sending: {sd_request}")
-    sd_response = requests.post(
+    sdxl_request = SDXLRequest(
+        input=SDXLRequestInput(
+            prompt=sd_request.input.prompt,
+            num_inferenece_steps=sd_request.input.steps,
+            num_images=sd_request.input.batch_size,
+            width=sd_request.input.width,
+            height=sd_request.input.height,
+        )
+    )
+    sdxl_request.input.__dict__.update(SDXL_OVERRIDES)
+    logger.debug(f"sending: {sdxl_request.model_dump()}")
+    response = requests.post(
         RUNPOD_BASE_URL_SDXL,
         headers=headers,
-        json=sd_request,
+        json=sdxl_request.model_dump(),
         timeout=TIMEOUT,
     )
-    sd_response_json = sd_response.json()
-    try:
-        image = sd_response_json.get("output").get("image_url")
-        image = image.replace("data:image/png;base64,", "")
-    except AttributeError:
-        return {"error": "Invalid response from runpod"}
+    sd_response = SDXLOutput.model_validate(response.json())
+    image = sd_response.output.image_url
+    image = image.replace("data:image/png;base64,", "")
 
     return image
 
@@ -110,10 +120,10 @@ model_method_map = {
 }
 
 
-def generate_image_based_on_model(method, request_body: dict):
-    sd_request = {"input": request_body}
+def generate_image_based_on_model(method, request_body: SDRequest):
+    logger.debug(request_body.model_dump())
     headers = {"Authorization": f"Bearer {RUNPOD_API_KEY}"}
-    image = method(sd_request, headers)
+    image = method(request_body, headers)
 
     return image
 
@@ -121,7 +131,8 @@ def generate_image_based_on_model(method, request_body: dict):
 @app.route("/sdapi/v1/txt2img", methods=["POST"])
 def generate_image():
     """returns image"""
-    request_body = request.json
+    logger.debug(request.json)
+    request_body = SDRequest.model_validate({"input": request.json})
 
     model = cur.execute(
         f"SELECT use_model FROM model WHERE id = {use_model};"
@@ -137,9 +148,15 @@ def generate_image():
     except ValueError("Invalid model"):
         return jsonify({"error": "Invalid model"})
 
+    logger.debug(request_body.model_dump())
+
     image = generate_image_based_on_model(model_method, request_body)
 
-    response = {"images": [image], "parameters": {}, "info": request_body.get("prompt")}
+    response = {
+        "images": [image],
+        "parameters": {},
+        "info": request_body.model_dump().get("prompt"),
+    }
     return jsonify(response)
 
 
